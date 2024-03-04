@@ -1,0 +1,1081 @@
+<html>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<head>
+<title>JavaScript2048</title>
+
+<style type="text/css">
+
+    html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p,
+    blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em,
+    font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
+    b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend,
+    table, caption, tbody, tfoot, thead, tr, th, td {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        font-size: 100%;
+        vertical-align: baseline;
+        background: transparent;
+    }
+
+    body { background-color:#FFF8F0; padding-left:1em; text:#776E64 font:15px Helvetica, sans-serif; link=#776E50; vlink=#777E70  }
+
+    .cssTableCenter { margin-left: auto; margin-right: auto; }
+
+
+    .cssDivCenter { justify-content: center;}
+
+    .cssCenter { margin-left: auto; margin-right: auto; }
+
+    .tbl2048 { border: 1px solid black; table-layout: fixed;  }
+
+    .td2048  { border: 1px solid black; width: 80px; heigth: 80px; line-height: 80px; overflow: hidden; text-align: center; vertical-align: middle; font-weight:bolder; color:#ffffff; font-size: 20px; }
+
+    .button1 { width: 8em; margin-top:5px; }
+    .button2 { width: 6em; margin-top:5px; }
+    .button3 { width:12em; margin-top:5px; }
+
+.cssDivScoreGame {
+  width: 10em
+
+  float: left;
+  margin-right: 35%;
+  margin-top: 12px;
+  background: #f2b179;
+  color: white;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+.cssDivScoreBest {
+  width: 10em
+  float: right;
+  margin-right: 35%;
+  margin-top: 12px;
+  background: #f2b179;
+  color: white;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+.cssDivScoreGame span {
+  font-size: 25px;
+  color: white;
+background: transparent;
+}
+
+.cssDivScoreBest span {
+  font-size: 25px;
+  color: white;
+background: transparent;
+}
+
+</style>
+
+<script src="jquery-1.9.0.min.js" type="text/javascript"></script>
+
+<script>
+
+
+  function cls2048()
+  {
+    this.m_anzahl_zeilen = 4;
+
+    this.m_anzahl_spalten = 4;
+
+    this.m_ergebnis_akt = 0;
+
+    this.m_ergebnis_best = 0;
+
+    this.m_hash_wert_start = 0;
+
+    this.m_spielzug_zaehler = 0;
+
+    this.m_knz_game_over = true;
+
+    this.m_knz_show_free_fields = false;
+
+    this.m_array_spielfelder = new Array();
+  }
+
+  
+  cls2048.prototype.getHashWertStart = function()
+  {
+    return this.m_hash_wert_start;
+  }
+
+  
+  cls2048.prototype.setHashWertStart = function( pHashWertStart )
+  {
+    this.m_hash_wert_start = pHashWertStart;
+  }
+
+  
+  cls2048.prototype.getKnzShowFreeFields = function()
+  {
+    return this.m_knz_show_free_fields;
+  }
+
+  
+  cls2048.prototype.setKnzShowFreeFields = function( pKnzShowFreeFields )
+  {
+    this.m_knz_show_free_fields = pKnzShowFreeFields;
+  }
+
+
+  cls2048.prototype.getErgebnisBest = function()
+  {
+    return this.m_ergebnis_best;
+  }
+
+
+  cls2048.prototype.setErgebnisBest = function( pErgebnisBest )
+  {
+    this.m_ergebnis_best = pErgebnisBest;
+  }
+
+
+  cls2048.prototype.getErgebnisAktuell = function()
+  {
+    return this.m_ergebnis_akt;
+  }
+
+
+  cls2048.prototype.getFeldWert = function( pZeile, pSpalte )
+  {
+    return this.m_array_spielfelder[ pZeile ][ pSpalte ];
+  }
+
+
+  cls2048.prototype.setFeldWert = function( pZeile, pSpalte, pWert )
+  {
+    this.m_array_spielfelder[ pZeile ][ pSpalte ] = pWert;
+  }
+
+
+  cls2048.prototype.getKnzGameOver = function()
+  {
+    return this.m_knz_game_over;
+  }
+
+
+  cls2048.prototype.getKnzGameInPlay = function()
+  {
+    return !this.m_knz_game_over;
+  }
+
+
+  cls2048.prototype.setKnzGameOver = function( pKnzGameOver )
+  {
+    this.m_knz_game_over = pKnzGameOver;
+  }
+
+
+  cls2048.prototype.initArray = function( pAnzahlZeilen, pAnzahlSpalten )
+  {
+    /*
+     * Uebernahmne der Anzahl Spalten un Zeilen in die 
+     * Klasseninternen Variablen.
+     */
+    this.m_anzahl_zeilen  = pAnzahlZeilen;
+
+    this.m_anzahl_spalten = pAnzahlSpalten;
+
+    this.m_ergebnis_akt = 0;
+
+    this.m_spielzug_zaehler = 0;
+
+    this.m_knz_game_over = false;
+
+    /*
+     * Initialisierung der While-Schleifen-Variablen
+     */
+    let index_zeile_aktuell  = 0;
+    let index_spalte_aktuell = 0;
+
+    /*
+     * Neue Instanz des Array-Objektes erstellen
+     */
+    this.m_array_spielfelder = new Array();
+
+    /*
+     * While-Schleife fuer alle Zeilen
+     */
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      /*
+       * Die aktuelle Zeile als Array deklarieren
+       */
+      this.m_array_spielfelder[ index_zeile_aktuell ] = [];
+
+      /*
+       * Index fuer die Spalten auf 0 setzen
+       */
+      index_spalte_aktuell = 0;
+
+      /*
+       * While-Schleife fuer die Initialisierung der Spalten.
+       * 
+       * Das Feld an der aktuellen Zeilen/Spaltenkombination wird 
+       * mit dem Wert 0 initialisiert.
+       */
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+        this.setFeldWert( index_zeile_aktuell, index_spalte_aktuell, 0 );
+
+        index_spalte_aktuell++;
+      }
+
+      index_zeile_aktuell++;
+    }
+  }
+
+
+  cls2048.prototype.renderGrid = function()
+  {
+    let index_zeile_aktuell  = 0;
+    let index_spalte_aktuell = 0;
+
+    let feld_wert = 0;
+
+    let freies_feld_nr = 0;
+
+    /*
+     * Variable fuer die Aufnahme der HTML-Tabelle
+     */
+    let html_ergebnis = "<table class=\"tbl2048\" cellspacing=\"3px\" >";
+
+    /*
+     * While-Schleife ueber alle Zeilen
+     */
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      /*
+       * Tag fuer eine Tabellenzeile hinzufuegen
+       */
+      html_ergebnis += "<tr>";
+
+      index_spalte_aktuell = 0;
+
+      /*
+       * While-Schleife ueber alle Spalten der aktuellen Zeile
+       */
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+        /*
+         * Aktuellen Feldwert lesen
+         */
+        feld_wert = this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell );
+        
+        /*
+         * HTML-Tabledata-Tag
+         * Der Feldwert bestimmt die Hintergrundfarbe der Tabellenzelle
+         */
+        html_ergebnis += "<td class=\"td2048\" ><div style=\"background-color:" + this.getFeldFarbe( feld_wert ) + "; color:#0; \" >";
+
+        /*
+         * Ist der Feldwert 0, wird keine Zahl angezeigt. 
+         * Der Inhalt der Zelle wird mit einem "&nbsp;" befuellt.
+         */
+        if ( feld_wert === 0 ) 
+        {
+          freies_feld_nr++; 
+ 
+          if ( this.m_knz_show_free_fields ) 
+          {
+            html_ergebnis += "&nbsp;" + "&nbsp;" + "F_" + freies_feld_nr;
+          }
+          else
+          {
+            html_ergebnis += "&nbsp;";
+          }
+        }
+        else 
+        {
+          html_ergebnis += feld_wert;
+        }
+
+        /*
+         * Tabellenzelle beenden
+         */
+        html_ergebnis += "</div></td>";
+
+        index_spalte_aktuell++;
+      }
+
+      html_ergebnis += "</tr>";
+
+      index_zeile_aktuell++;
+    }
+
+    html_ergebnis += "</table>";
+
+    return html_ergebnis;
+  }
+
+
+  cls2048.prototype.getFeldFarbe = function( pFeldWert )
+  {
+     let farbwert_0 = 80;
+//    if ( pFeldWert ===     0 ) { return "rgb( 255, 255, 255 )"; }
+      if ( pFeldWert ===     0 ) { return "rgb( " + farbwert_0 + ", " + farbwert_0 + ", " + farbwert_0 + " )"; }
+    if ( pFeldWert ===     2 ) { return "rgb( 221, 221, 211 )"; }
+    if ( pFeldWert ===     4 ) { return "rgb( 230, 217, 194 )"; }
+    if ( pFeldWert ===     8 ) { return "rgb( 235, 172, 194 )"; }
+    if ( pFeldWert ===    16 ) { return "rgb( 238, 145,  96 )"; }
+    if ( pFeldWert ===    32 ) { return "rgb( 239, 120,  92 )"; }
+    if ( pFeldWert ===    64 ) { return "rgb( 226,  85,  92 )"; }
+    if ( pFeldWert ===   128 ) { return "rgb( 232, 199,  69 )"; }
+    if ( pFeldWert ===   256 ) { return "rgb( 232, 199,  69 )"; }
+    if ( pFeldWert ===   512 ) { return "rgb( 232, 199,  69 )"; }
+    if ( pFeldWert ===  1024 ) { return "rgb( 232, 199,  69 )"; }
+    if ( pFeldWert ===  2048 ) { return "rgb( 232, 199,  69 )"; }
+    if ( pFeldWert ===  4096 ) { return "rgb( 164,  92, 162 )"; }
+    if ( pFeldWert ===  8192 ) { return "rgb( 164,  92,  62 )"; }
+    if ( pFeldWert === 16384 ) { return "rgb( 164,  92,  92 )"; }
+    if ( pFeldWert === 32768 ) { return "rgb( 164,  92, 122 )"; }
+    if ( pFeldWert === 65536 ) { return "rgb( 164,  92, 192 )"; }
+
+    return "rgb( 109,  175, 211 )";
+  }
+
+
+  cls2048.prototype.checkGameOver = function()
+  {
+    let index_zeile_aktuell  = 0;
+    let index_spalte_aktuell = 0;
+
+    /*
+     * Es wird im Grid geprueft, ob noch ein Spielzug moeglich ist.
+     *
+     * Es gibt 2 Moeglichkeiten in dem dass der Fall ist.
+     * -Es gibt noch ein Feld, dessen Feldwert 0 ist.
+     * -Es gibt noch 2 nebeneinanderliegende Felder, welche den 
+     *  gleichen Feldwert haben.
+     *
+     *  Diese Felder koennen Reihe oder Uebereinander stehen.
+     *
+     * Wird ein solches Feld gefunden, wird dem Aufrufer FALSE
+     * zurueckgegeben, da das Spiel noch nicht beeendet ist.
+     *
+     * Werden keine Felder gefunden, wird dem Aufrufer TRUE
+     * zurueckgegeben, da kein Spielzug mehr moeglich ist.
+     */
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      index_spalte_aktuell = 0;
+
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+    	/*
+    	 * Pruefung auf Feldwert 0
+    	 */
+        if ( this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell ) === 0 )
+        {
+          return false;
+        }
+
+        if ( index_spalte_aktuell < ( this.m_anzahl_spalten - 1) )
+        {
+          /*
+           * Zeilenpruefung auf zwei gleiche Feldwerte nacheinander.
+           */
+          if ( this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell ) === this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell + 1 ) )
+          {
+            return false;
+          }
+        }
+
+        if ( index_zeile_aktuell < ( this.m_anzahl_zeilen -1 ) )
+        {
+          /*
+           * Spaltenpruefung auf zwei gleiche Feldwerte uebenacheinander.
+           */
+          if ( this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell ) === this.getFeldWert( index_zeile_aktuell + 1, index_spalte_aktuell ) )
+          {
+            return false;
+          }
+        }
+
+        index_spalte_aktuell++;
+      }
+
+      index_zeile_aktuell++;
+    }
+
+    return true;
+  }
+
+
+  cls2048.prototype.getFeldHash = function( pZeile, pSpalte )
+  {
+    return ( pZeile + pSpalte ) * this.m_array_spielfelder[ pZeile ][ pSpalte ];
+  }
+
+
+  cls2048.prototype.getHashWert = function()
+  {
+    let hash_wert            = 0;
+    let index_zeile_aktuell  = 0;
+    let index_spalte_aktuell = 0;
+
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      index_spalte_aktuell = 0;
+
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+        hash_wert += this.getFeldHash( index_zeile_aktuell, index_spalte_aktuell );
+
+        index_spalte_aktuell++;
+      }
+
+      index_zeile_aktuell++;
+    }
+
+    return hash_wert;
+  }
+
+
+  cls2048.prototype.placeNewValue = function()
+  {
+    /*
+     * Anzahl der freien Felder im Grid ermitteln
+     */
+    let anzahl_freie_feler   = 0;
+    let index_zeile_aktuell  = 0;
+    let index_spalte_aktuell = 0;
+
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      index_spalte_aktuell = 0;
+
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+        if ( this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell ) === 0 )
+        {
+          anzahl_freie_feler++;
+        }
+
+        index_spalte_aktuell++;
+      }
+
+      index_zeile_aktuell++;
+    }
+
+    /*
+     * Pruefung: Sind noch freie Felder vorhanden?
+     */
+    if ( anzahl_freie_feler > 0 )
+    {
+      let neues_feld_nr_set = Math.floor( ( Math.random() * anzahl_freie_feler ) + 0.5 );
+      
+      if ( neues_feld_nr_set <= 0 )
+      {
+        neues_feld_nr_set = 1;
+      }
+
+      $( '#divNewValue' ).val( "" +  neues_feld_nr_set );
+
+      let neues_feld_wert = Number( Math.random() <= 0.75 ? 2 : 4 );
+
+      let neues_feld_nr_aktuell = 0;
+
+      index_zeile_aktuell  = 0;
+      index_spalte_aktuell = 0;
+
+      while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+      {
+        index_spalte_aktuell = 0;
+
+        while ( index_spalte_aktuell < this.m_anzahl_spalten )
+        {
+          if ( this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell ) === 0 )
+          {
+            neues_feld_nr_aktuell++;
+
+            if ( neues_feld_nr_aktuell === neues_feld_nr_set )
+            {
+              this.setFeldWert( index_zeile_aktuell, index_spalte_aktuell, neues_feld_wert )
+
+              return true;
+            }
+          }
+
+          index_spalte_aktuell++;
+        }
+
+        index_zeile_aktuell++;
+      }
+    }
+
+    return false;
+  }
+
+
+  cls2048.prototype.noveHorizontal = function( pRichtung )
+  {
+    let anzahl_spalten = this.m_anzahl_spalten; 
+
+    let index_zeile_aktuell = 0;
+
+    let index_abbruch = -1;
+
+    let inc_wert = 0;
+
+    let akt_summe_index = 0;
+    let akt_position_index = 0;
+    let akt_summe_wert = 0;
+    let akt_position_wert = 0;
+
+    let zaehler_spalte = 0;
+
+    if ( pRichtung < 1 )
+    {
+      inc_wert = -1;
+
+      index_abbruch = -1;
+    }
+    else
+    {
+      inc_wert = 1;
+
+      index_abbruch = anzahl_spalten;
+    }
+
+    /*
+     * While-Schleife ueber alle Zeilen 
+     */
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      if ( pRichtung < 1 )
+      {
+        akt_summe_index = anzahl_spalten - 1;
+        
+        akt_position_index = akt_summe_index - 1;
+      }
+      else
+      {
+        akt_summe_index = 0;
+        
+        akt_position_index = akt_summe_index + 1;
+      }
+
+      zaehler_spalte = 0;
+
+      while ( ( zaehler_spalte <= anzahl_spalten ) && ( akt_position_index != index_abbruch ) )
+      {
+        akt_summe_wert    = this.getFeldWert( index_zeile_aktuell, akt_summe_index    );
+        akt_position_wert = this.getFeldWert( index_zeile_aktuell, akt_position_index ); 
+
+        if ( akt_position_wert > 0 )
+        {            
+          if ( akt_position_wert == akt_summe_wert )
+          {
+            this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_summe_wert + akt_position_wert );
+                
+            this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
+                
+            akt_summe_index += inc_wert;
+
+            this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+          }
+          else if ( akt_summe_wert == 0 )
+          {
+            this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_position_wert );
+                
+            this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
+          }
+          else if ( akt_summe_wert > 0 )
+          {
+            akt_summe_index += inc_wert;
+            
+            while ( ( this.getFeldWert( index_zeile_aktuell, akt_summe_index ) > 0 ) && ( akt_summe_index != akt_position_index ) )
+            {
+              akt_summe_index += inc_wert;
+            }
+
+            akt_summe_wert = this.getFeldWert( index_zeile_aktuell, akt_summe_index );
+
+            if ( akt_summe_index != akt_position_index )
+            {
+              if ( akt_position_wert == akt_summe_wert )
+              {
+                this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_summe_wert + akt_position_wert );
+                
+                this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
+                
+                akt_summe_index += inc_wert;
+
+                this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+              }
+              else if ( akt_summe_wert == 0 )
+              {
+                this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_position_wert );
+                
+                this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
+              }
+            }
+          }
+        }
+
+        akt_position_index += inc_wert;
+
+        zaehler_spalte++;
+      }
+
+      index_zeile_aktuell++;
+    }
+
+    return true;
+  }
+
+
+  cls2048.prototype.noveVertikal = function( pRichtung )
+  {
+    let anzahl_zeilen = this.m_anzahl_zeilen;
+
+    let index_spalte_aktuell = 0;
+
+    let index_abbruch = -1;
+
+    let inc_wert = 0;
+
+    let akt_summe_index = 0;
+    let akt_position_index = 0;
+    let akt_summe_wert = 0;
+    let akt_position_wert = 0;
+
+    let zaehler_zeile = 0;
+
+    if ( pRichtung < 1 )
+    {
+      inc_wert = -1;
+
+      index_abbruch = -1;
+    }
+    else
+    {
+      inc_wert = 1;
+
+      index_abbruch = anzahl_zeilen;
+    }
+
+    while ( index_spalte_aktuell < this.m_anzahl_spalten )
+    {
+      if ( pRichtung < 1 )
+      {
+        akt_summe_index = anzahl_zeilen - 1;
+        
+        akt_position_index = akt_summe_index - 1;
+      }
+      else
+      {
+        akt_summe_index = 0;
+        
+        akt_position_index = akt_summe_index + 1;
+      }
+
+      zaehler_zeile = 0;
+
+      while ( ( zaehler_zeile <= anzahl_zeilen ) && ( akt_position_index != index_abbruch ) )
+      {
+        akt_summe_wert    = this.getFeldWert( akt_summe_index, index_spalte_aktuell    );
+        akt_position_wert = this.getFeldWert( akt_position_index, index_spalte_aktuell ); 
+
+        if ( akt_position_wert > 0 )
+        {            
+          if ( akt_position_wert == akt_summe_wert )
+          {
+            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_position_wert );
+                
+            this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
+                
+            akt_summe_index += inc_wert;
+
+            this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+          }
+          else if ( akt_summe_wert == 0 )
+          {
+            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_position_wert );
+                
+            this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
+          }
+          else if ( akt_summe_wert > 0 )
+          {
+            akt_summe_index += inc_wert;
+            
+            while ( ( this.getFeldWert( akt_summe_index, index_spalte_aktuell ) > 0 ) && ( akt_summe_index != akt_position_index ) )
+            {
+              akt_summe_index += inc_wert;
+            }
+
+            akt_summe_wert = this.getFeldWert( akt_summe_index, index_spalte_aktuell );
+
+            if ( akt_summe_index != akt_position_index )
+            {
+              if ( akt_position_wert == akt_summe_wert )
+              {
+                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_position_wert );
+                
+                this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
+                
+                akt_summe_index += inc_wert;
+
+                this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+              }
+              else if ( akt_summe_wert == 0 )
+              {
+                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_position_wert );
+                
+                this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
+              }
+            }
+          }
+        }
+
+        akt_position_index += inc_wert;
+
+        zaehler_zeile++;
+      }
+
+      index_spalte_aktuell++;
+    }
+
+    return true;
+  }
+
+
+  cls2048.prototype.keyPress = function( pKeyCode ) 
+  {
+    /*
+     * https://stackoverflow.com/questions/19347269/jquery-keypress-arrow-keys
+     */
+    if ( pKeyCode === 37 ) { return this.noveHorizontal( 1 );  } // Left Arrow
+
+    if ( pKeyCode === 39 ) { return this.noveHorizontal( -1 ); } // Right Arrow
+
+    if ( pKeyCode === 38 ) { return this.noveVertikal( 1 );    } // Up Arrow
+
+    if ( pKeyCode === 40 ) { return this.noveVertikal( -1 );  } // Down Arrow
+
+    return false;
+  }
+
+
+  cls2048.prototype.drawGame = function( pKeyCode ) 
+  {
+    $( '#divTabelle2048'     ).html( this.renderGrid() );
+
+    $( '#divErgebnisAktuell' ).html( this.getErgebnisAktuell() );
+
+    $( '#divErgebnisBest'    ).html( this.getErgebnisBest() );
+
+    $( '#divSpielzug'        ).val( this.m_spielzug_zaehler );
+
+    $( '#divHashWertStart'   ).val( this.getHashWertStart() );
+
+    $( '#divHashWertEnde'    ).val( this.getHashWert() );
+
+    this.m_knz_game_over = this.checkGameOver();
+
+    $( '#divGameOver'        ).html( ( this.getKnzGameOver() ? "Game Over" : "---" ) );
+  }
+
+
+  cls2048.prototype.doKeyPress = function( pKeyCode ) 
+  {
+    if ( this.getKnzGameInPlay() )
+    {
+      $( '#divNewValue' ).val( "-- Kein neuer Wert gesetzt --" );
+
+      this.setHashWertStart( this.getHashWert() );
+
+      if ( this.keyPress( pKeyCode ) ) 
+      {
+        if ( this.getHashWertStart() != this.getHashWert() )
+        {
+          this.placeNewValue();
+
+          this.m_spielzug_zaehler++;
+        }
+      }
+
+      if ( this.getErgebnisAktuell() > this.getErgebnisBest() )
+      {
+         this.setErgebnisBest( this.getErgebnisAktuell() );
+      }
+
+      this.drawGame();
+    }
+  }
+
+
+  cls2048.prototype.startNewGame = function( pAnzahlZeilen, pAnzahlSpalten ) 
+  {
+    this.initArray( pAnzahlZeilen, pAnzahlSpalten );
+
+    this.placeNewValue();
+
+    this.placeNewValue();
+
+    this.setHashWertStart( this.getHashWert() );
+
+    this.drawGame();
+  }
+
+
+  cls2048.prototype.setShowFreeFields = function( pKnzShowFreeFields ) 
+  {
+    this.setKnzShowFreeFields( pKnzShowFreeFields );
+
+    this.drawGame();
+  }
+
+
+  cls2048.prototype.startTestGameOver = function( pKnzFillGrid ) 
+  {
+    if ( pKnzFillGrid )
+    {
+      let index_zeile_aktuell  = 0;
+      let index_spalte_aktuell = 0;
+
+      while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+      {
+        index_spalte_aktuell = 0;
+
+        while ( index_spalte_aktuell < this.m_anzahl_spalten )
+        {
+          this.setFeldWert( index_zeile_aktuell, index_spalte_aktuell, ( ( index_zeile_aktuell + 1 ) * 100 ) + ( index_spalte_aktuell + 1 ) ); 
+
+          index_spalte_aktuell++;
+        }
+
+        index_zeile_aktuell++;
+      }
+    }
+
+
+    this.drawGame();
+  }
+
+
+  $( document ).ready( function()
+  {
+    let m_instanz_2048 = new cls2048();
+
+    $( "#btnUP"                 ).click( function() { m_instanz_2048.doKeyPress( 38 );           } );
+
+    $( "#btnDOWN"               ).click( function() { m_instanz_2048.doKeyPress( 40 );           } );
+
+    $( "#btnLEFT"               ).click( function() { m_instanz_2048.doKeyPress( 37 );           } );
+
+    $( "#btnRIGHT"              ).click( function() { m_instanz_2048.doKeyPress( 39 );           } );
+
+    $( "#btnStart3"             ).click( function() { m_instanz_2048.startNewGame( 3, 3 );    } );
+
+    $( "#btnStart4"             ).click( function() { m_instanz_2048.startNewGame( 4, 4 );    } );
+
+    $( "#btnStart5"             ).click( function() { m_instanz_2048.startNewGame( 5, 5 );    } );
+
+    $( "#btnStart6"             ).click( function() { m_instanz_2048.startNewGame( 6, 6 );    } );
+
+    $( "#btnStart7"             ).click( function() { m_instanz_2048.startNewGame( 7, 7 );    } );
+
+    $( "#btnStart8"             ).click( function() { m_instanz_2048.startNewGame( 8, 8 );    } );
+
+    $( "#btnStartQ"             ).click( function() { m_instanz_2048.startNewGame( 5, 7 );    } );
+
+    $( "#btnStartH"             ).click( function() { m_instanz_2048.startNewGame( 8, 4 );    } );
+
+    $( "#btnTestGameOver1"      ).click( function() { m_instanz_2048.startTestGameOver( true );  } );
+
+    $( "#btnTestGameOver2"      ).click( function() { m_instanz_2048.startTestGameOver( false ); } );
+
+    $( "#btnShowFreeFieldsYes"  ).click( function() { m_instanz_2048.setShowFreeFields( true  ); } );
+
+    $( "#btnShowFreeFieldsNo"   ).click( function() { m_instanz_2048.setShowFreeFields( false ); } );
+
+
+    $( "#btnTestLoopLeft" ).click( function() 
+    {
+      m_instanz_2048.doKeyPress( 37 );
+      m_instanz_2048.doKeyPress( 40 );
+      m_instanz_2048.doKeyPress( 39 );
+      m_instanz_2048.doKeyPress( 38 );
+    } );
+
+
+    $( "#btnTestLoopRight" ).click( function() 
+    {
+        m_instanz_2048.doKeyPress( 38 );
+        m_instanz_2048.doKeyPress( 40 );
+        m_instanz_2048.doKeyPress( 37 );
+        m_instanz_2048.doKeyPress( 39 );
+    } );
+
+
+    $( document ).keydown( function( pEvent ) 
+    {
+      if ( pEvent.which === 65 ) 
+      {
+        m_instanz_2048.doKeyPress( 37 );
+        m_instanz_2048.doKeyPress( 40 );
+        m_instanz_2048.doKeyPress( 39 );
+        m_instanz_2048.doKeyPress( 38 );
+      }
+      else if ( pEvent.which === 66 ) 
+      {
+        m_instanz_2048.doKeyPress( 38 );
+        m_instanz_2048.doKeyPress( 40 );
+        m_instanz_2048.doKeyPress( 37 );
+        m_instanz_2048.doKeyPress( 39 );
+      }
+      else 
+      {
+        if ( pEvent.which  === 37 ) { pEvent.preventDefault(); } // Left Arrow
+        if ( pEvent.which  === 39 ) { pEvent.preventDefault(); } // Right Arrow
+        if ( pEvent.which  === 38 ) { pEvent.preventDefault(); } // Up Arrow
+        if ( pEvent.which  === 40 ) { pEvent.preventDefault(); } // Down Arrow
+
+        m_instanz_2048.doKeyPress( pEvent.which );
+      }
+    });
+
+    m_instanz_2048.startNewGame( 4, 4 );
+
+  } ); // document.ready
+
+</script>
+</head>
+<body>
+
+  <br>
+  
+  <table class="cssTableCenter" >
+
+    <tr>
+      <td colspan="3" >
+        <input class="button1" type="submit" id="btnStart3" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;3&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <input class="button1" type="submit" id="btnStart4" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;4&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <input class="button1" type="submit" id="btnStart5" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;5&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <br />
+        <input class="button1" type="submit" id="btnStart6" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;6&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <input class="button1" type="submit" id="btnStart7" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;7&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <input class="button1" type="submit" id="btnStart8" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;8&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <br />
+        <input class="button1" type="submit" id="btnStartQ" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;Queer&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <input class="button1" type="submit" id="btnStartH" value="&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;Hoch&nbsp;&nbsp;&nbsp;"  >&nbsp;&nbsp;
+      </td>
+    </tr>
+
+    <tr>
+      <td><div class="cssDivScoreGame"><span class="score_h">Score:</span><p id="divErgebnisAktuell">0</p></div></td>
+      <td>&nbsp;<p style="valign:center" id="divGameOver" > ---- </p>&nbsp;</td>
+      <td><div class="cssDivScoreBest"><span class="score_h">Best:</span><p id="divErgebnisBest">0</p></div></td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >&nbsp;&nbsp;</td>
+    </tr>
+
+    <tr>
+      <td colspan="3" ><div id="divTabelle2048" ></div></td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >
+        <input class="button2" type="submit" id="btnUP"            value="&nbsp;&nbsp;Up&nbsp;&nbsp;"         >&nbsp;&nbsp;
+        <input class="button2" type="submit" id="btnDOWN"          value="&nbsp;&nbsp;Down&nbsp;&nbsp;"       >&nbsp;&nbsp;
+        <input class="button2" type="submit" id="btnLEFT"          value="&nbsp;&nbsp;Left&nbsp;&nbsp;"       >&nbsp;&nbsp;
+        <input class="button2" type="submit" id="btnRIGHT"         value="&nbsp;&nbsp;Right&nbsp;&nbsp;"      >&nbsp;&nbsp;&nbsp;&nbsp;
+      </td>
+    </tr>
+
+
+    <tr>
+      <td colspan="3" >
+        <input class="button3" type="submit" id="btnTestLoopLeft"  value="&nbsp;&nbsp;Loop Left&nbsp;&nbsp;"  >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestLoopRight" value="&nbsp;&nbsp;Loop Right&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <br />
+        <input class="button3" type="submit" id="btnTestGameOver1"   value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 1&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestGameOver2"   value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 2&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <br />
+        <input class="button3" type="submit" id="btnShowFreeFieldsYes" value="&nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Free Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnShowFreeFieldsNo"  value="&nbsp;&nbsp;&nbsp;&nbsp;Hide&nbsp;Free Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >&nbsp;&nbsp;</td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >
+        <a href="https://gabrielecirulli.github.io/2048/"         target="_blank" >https://gabrielecirulli.github.io/2048</a><br />
+        <a href="https://en.wikipedia.org/wiki/2048_(video_game)" target="_blank" >https://en.wikipedia.org/wiki/2048_(video_game)</a><br />
+        <a href="https://www.youtube.com/watch?v=JSn-DJU8qf0"     target="_blank" >https://www.youtube.com/watch?v=JSn-DJU8qf0</a><br />
+        <a href="https://thecodingtrain.com/challenges/94-2048"   target="_blank" >https://thecodingtrain.com/challenges/94-2048</a><br />
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >&nbsp;&nbsp;</td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >
+      Use arrow keys to move the tiles.<br />
+      Tiles with the same number merge into one when they touch. 
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >&nbsp;&nbsp;</td>
+    </tr>
+
+    <tr>
+      <td colspan="3" >
+          <table>
+        
+            <tr>
+              <td>Spielzug Nummer</td>
+              <td>&nbsp;&nbsp;</td>
+              <td><input type="text" value="12" id="divSpielzug"/></td>
+            </tr>
+        
+        
+            <tr>
+              <td>Neuer Wert Feld-Nr</td>
+              <td>&nbsp;&nbsp;</td>
+              <td><input type="text" value="12" id="divNewValue"/></td>
+            </tr>
+        
+        
+            <tr>
+              <td>Hash-Wert Start</td>
+              <td>&nbsp;&nbsp;</td>
+              <td><input type="text" value="12" id="divHashWertStart"/></td>
+            </tr>
+        
+        
+            <tr>
+              <td>Hash-Wert Ende</td>
+              <td>&nbsp;&nbsp;</td>
+              <td><input type="text" value="12" id="divHashWertEnde"/></td>
+            </tr>
+        
+          </table>
+      </td>
+    </tr>
+
+
+
+  </table>
+
+  <br>
+
+
+</body>
+</html>
