@@ -23,7 +23,6 @@
 
     .cssTableCenter { margin-left: auto; margin-right: auto; }
 
-
     .cssDivCenter { justify-content: center;}
 
     .cssCenter { margin-left: auto; margin-right: auto; }
@@ -34,42 +33,41 @@
 
     .button1 { width: 8em; margin-top:5px; }
     .button2 { width: 6em; margin-top:5px; }
-    .button3 { width:12em; margin-top:5px; }
+    .button3 { width:13em; margin-top:5px; }
 
-.cssDivScoreGame {
-  width: 10em
-
-  float: left;
-  margin-right: 35%;
-  margin-top: 12px;
-  background: #f2b179;
-  color: white;
-  padding: 10px;
-  border-radius: 3px;
-}
-
-.cssDivScoreBest {
-  width: 10em
-  float: right;
-  margin-right: 35%;
-  margin-top: 12px;
-  background: #f2b179;
-  color: white;
-  padding: 10px;
-  border-radius: 3px;
-}
-
-.cssDivScoreGame span {
-  font-size: 25px;
-  color: white;
-background: transparent;
-}
-
-.cssDivScoreBest span {
-  font-size: 25px;
-  color: white;
-background: transparent;
-}
+    .cssDivScoreGame {
+      width: 10em
+      float: left;
+      margin-right: 35%;
+      margin-top: 12px;
+      background: #f2b179;
+      color: white;
+      padding: 10px;
+      border-radius: 3px;
+    }
+      
+    .cssDivScoreBest {
+      width: 10em
+      float: right;
+      margin-right: 35%;
+      margin-top: 12px;
+      background: #f2b179;
+      color: white;
+      padding: 10px;
+      border-radius: 3px;
+    }
+      
+    .cssDivScoreGame span {
+      font-size: 25px;
+      color: white;
+      background: transparent;
+    }
+      
+    .cssDivScoreBest span {
+      font-size: 25px;
+      color: white;
+      background: transparent;
+    }
 
 </style>
 
@@ -77,6 +75,27 @@ background: transparent;
 
 <script>
 
+/*
+ *******************************************************************
+ *
+ * REMARKS / Translations
+ *
+ * zeile       = row
+ * spalte      = column
+ * anzahl      = number of
+ * zaehler     = counter
+ * ergebnis    = result
+ * feld        = field
+ * freies feld = free field
+ * spielzug    = game move
+ * wert        = value
+ *
+ * Otherwise: Use google translate.
+ *
+ *            https://translate.google.com/?sl=de&tl=en
+ *
+ *******************************************************************
+ */
 
   function cls2048()
   {
@@ -93,6 +112,8 @@ background: transparent;
     this.m_spielzug_zaehler = 0;
 
     this.m_knz_game_over = true;
+
+    this.m_knz_rgb_white = false;
 
     this.m_knz_show_free_fields = false;
 
@@ -178,15 +199,15 @@ background: transparent;
      * Uebernahmne der Anzahl Spalten un Zeilen in die 
      * Klasseninternen Variablen.
      */
-    this.m_anzahl_zeilen  = pAnzahlZeilen;
+    this.m_anzahl_zeilen    = pAnzahlZeilen;
 
-    this.m_anzahl_spalten = pAnzahlSpalten;
+    this.m_anzahl_spalten   = pAnzahlSpalten;
 
-    this.m_ergebnis_akt = 0;
+    this.m_ergebnis_akt     = 0;
 
     this.m_spielzug_zaehler = 0;
 
-    this.m_knz_game_over = false;
+    this.m_knz_game_over    = false;
 
     /*
      * Initialisierung der While-Schleifen-Variablen
@@ -237,8 +258,7 @@ background: transparent;
     let index_zeile_aktuell  = 0;
     let index_spalte_aktuell = 0;
 
-    let feld_wert = 0;
-
+    let feld_wert      = 0;
     let freies_feld_nr = 0;
 
     /*
@@ -317,9 +337,33 @@ background: transparent;
 
   cls2048.prototype.getFeldFarbe = function( pFeldWert )
   {
-     let farbwert_0 = 80;
-//    if ( pFeldWert ===     0 ) { return "rgb( 255, 255, 255 )"; }
-      if ( pFeldWert ===     0 ) { return "rgb( " + farbwert_0 + ", " + farbwert_0 + ", " + farbwert_0 + " )"; }
+    /*
+     * Je nach uebergebenem Feldwert, wird eine Farbe zurueckgegeben.
+     *
+     * Die Rueckgabe ist hier ein String mit der HTML-CSS-RGB-Funktion.
+     *
+     * Ist der Feldwert hier noch nicht enthalten, wird ein Standardwert zurueckgegeben
+     *
+     * Handelt es sich um ein freies Feld (Feldwert = 0), kann die
+     * Farbe 0 oder grau sein. Das wird ueber eine Variable gesteuert.
+     * Es musst mal ein dunkler Hintergrund sein, damit die Schrift
+     * fuer die Debug-Ausgabe der freien Felder lesbar ist.
+     */
+
+    if ( pFeldWert === 0 )
+    {
+      if ( this.m_knz_rgb_white ) 
+      {
+        return "rgb( 255, 255, 255 )"; 
+      }
+      else
+      {
+        let farbwert_0 = 80;
+
+        return "rgb( " + farbwert_0 + ", " + farbwert_0 + ", " + farbwert_0 + " )";
+      }
+    }
+
     if ( pFeldWert ===     2 ) { return "rgb( 221, 221, 211 )"; }
     if ( pFeldWert ===     4 ) { return "rgb( 230, 217, 194 )"; }
     if ( pFeldWert ===     8 ) { return "rgb( 235, 172, 194 )"; }
@@ -416,6 +460,17 @@ background: transparent;
 
   cls2048.prototype.getHashWert = function()
   {
+    /*
+     * Hashwert
+     *
+     * Es wird der Hashwert des Spielfeldes vor und nach einem Spielzug ermittelt.
+     * 
+     * Ist der Spielzug ungueltig, veraendern sich die Hashwerte nicht.
+     *
+     * Ein neuer "Spielstein" wird nur dann dem Spielfeld hinzugefuegt,
+     * wenn der Spielzug gueltig ist.
+     */
+
     let hash_wert            = 0;
     let index_zeile_aktuell  = 0;
     let index_spalte_aktuell = 0;
@@ -469,6 +524,11 @@ background: transparent;
      */
     if ( anzahl_freie_feler > 0 )
     {
+      /*
+       * Aus der Anzahl der freien Felder, wird per Zufall eine Feldnummer ausgewaehlt.
+       * 
+       * Ist die Feldnummer kleiner gleich 0, wird das erste Feld genommen.
+       */
       let neues_feld_nr_set = Math.floor( ( Math.random() * anzahl_freie_feler ) + 0.5 );
       
       if ( neues_feld_nr_set <= 0 )
@@ -478,8 +538,18 @@ background: transparent;
 
       $( '#divNewValue' ).val( "" +  neues_feld_nr_set );
 
+      /*
+       * Bestimmung des Feldwertes
+       * Der neue Feldwert ist in 75 Prozent der Faelle eine 2, sonst eine 4
+       */
       let neues_feld_wert = Number( Math.random() <= 0.75 ? 2 : 4 );
 
+      /*
+       * Ueber eine While-Schleife, wird das freie Feld in den Spielfeldern gesucht.
+       * 
+       * Wurde die Feldnummer gefunden, bekommt dieses den neuen Feldwert zugewiesen
+       * und die Funktion verlassen.
+       */
       let neues_feld_nr_aktuell = 0;
 
       index_zeile_aktuell  = 0;
@@ -513,6 +583,71 @@ background: transparent;
     return false;
   }
 
+  /*
+   * Verschiebefunktion Horizontal
+   * 
+   * Regeln:
+   *   - Bei einer Verschiebung des Spielfeldes werden je zwei aneinanderliegende Felder 
+   *     mit einer gleichen Zahl zu einem Feld zusammengezaehlt.
+   * 
+   *     Das in der Verschieberichtung weiter entfernte Feld wird dabei zu einem freiem Feld.
+   *     Der Feldwert wird auf 0 gesetzt.
+   * 
+   *   - Felder mit einem Wert von 0 (=freies Feld), werden in der Richtung der Verschiebung
+   *     mit groesseren Feldwerden aufgefuellt.
+   * 
+   * 
+   * Fakten:
+   * Die horizontale Verschiebefunktion gilt fuer beide Richtungen (Links und Rechts).
+   * 
+   * 
+   * Die aeussere Schleife geht ueber alle Zeilen.
+   * Die innere Schleife geht ueber alle Spalten.
+   * 
+   * Die Variablen "akt_summe_index" und "akt_summe_index" sind Spalten-Indexe.
+   * Die Zeilen-Indexe werden ueber die aeussere Schleife gesteuert.
+   * 
+   * 
+   * Es gibt 2 Indexe
+   * 1. Laufindex "akt_lauf_index"
+   * 2. Summenindex "akt_summe_index"
+   * 
+   * Der Summenindex zeigt auf das Feld, welches in Verschieberichtung als naechstes mit 
+   * einem Wert zu versehen ist.
+   * 
+   * Der Laufindex ist immer vor dem Summenindex.
+   * Der Laufindex ist fuer die Feldpruefungen zustaendig.
+   * 
+   * Der Summenindex veraendert seine Position wenn:
+   * - es zu einer Addition von 2 Feldern kommt
+   * - der Feldwert des Laufzaehlers groesser 0 aber ungleich dem Feldwert eim Summenindex ist.
+   *   Es wird dann das naechste Feld gesucht, welches den Wert 0 hat
+   *   
+   * Der Summenindex kann bis maximal zum Laufindex aufschliessen.
+   * Der Summenindex ist aber nie vor dem Laufindex.
+   * 
+   * 
+   * Die Laufrichtung wird ueber die Variable "increment_wert" gesteuert.
+   * 
+   * Wird nach links verschoben:
+   * -Die Spielsteine werden zum Array-Anfang verschoben.
+   * -Die Suchrichtung startet beim kleinem Index hin zum grossen Index.
+   *  (Also vom Array-Anfang bis zum Array-Ende)
+   * -Die Indexangaben muessen sich erhoehen.
+   * -Der Incrementwert ist 1.
+   * -Der Summenindex startet bei Index 0.
+   * -Der Laufindex startet bei Index 1.
+   * -Der Laufindex endet am Array-Ende.
+   * 
+   * Wird nach rechts verschoben:
+   * -Die Spielsteine werden zum Array-Ende verschoben.
+   * -Die Suchrichtung startet am Ende hin zum Anfang
+   * -Die Indexangaben muessen sich verkleinern
+   * -Der Incrementwert ist -1.
+   * -Der Summenindex starte am Array-Ende
+   * -Der Laufindex startet am zweitletztem Array-Element.
+   * -Der Laufindex endet am Array-Start (Index 0).
+   */
 
   cls2048.prototype.noveHorizontal = function( pRichtung )
   {
@@ -520,26 +655,23 @@ background: transparent;
 
     let index_zeile_aktuell = 0;
 
-    let index_abbruch = -1;
-
-    let inc_wert = 0;
-
-    let akt_summe_index = 0;
-    let akt_position_index = 0;
-    let akt_summe_wert = 0;
-    let akt_position_wert = 0;
-
-    let zaehler_spalte = 0;
+    let index_abbruch      = -1;
+    let increment_wert     =  0;
+    let akt_summe_index    =  0;
+    let akt_lauf_index     =  0;
+    let akt_summe_wert     =  0;
+    let akt_laufindex_wert =  0;
+    let zaehler_spalte     =  0;
 
     if ( pRichtung < 1 )
     {
-      inc_wert = -1;
+      increment_wert = -1;
 
       index_abbruch = -1;
     }
     else
     {
-      inc_wert = 1;
+      increment_wert = 1;
 
       index_abbruch = anzahl_spalten;
     }
@@ -549,78 +681,144 @@ background: transparent;
      */
     while ( index_zeile_aktuell < this.m_anzahl_zeilen )
     {
+      /*
+       * Initialsierung Indexwerte
+       * Fuer jede neu zu bearbeitende Zeile muessen die Indexstartwerte neu gesetzt werden.
+       */
       if ( pRichtung < 1 )
       {
         akt_summe_index = anzahl_spalten - 1;
         
-        akt_position_index = akt_summe_index - 1;
+        akt_lauf_index = akt_summe_index - 1;
       }
       else
       {
         akt_summe_index = 0;
         
-        akt_position_index = akt_summe_index + 1;
+        akt_lauf_index = akt_summe_index + 1;
       }
 
       zaehler_spalte = 0;
 
-      while ( ( zaehler_spalte <= anzahl_spalten ) && ( akt_position_index != index_abbruch ) )
+      while ( ( zaehler_spalte <= anzahl_spalten ) && ( akt_lauf_index != index_abbruch ) )
       {
+        /*
+         * Speicherung der Feldwerte
+         * Die Speicherung der Feldwerte ist eigentlich nicht wirklich notwendig.
+         * Die Zwischenspeicherung macht aber den Algorithmus uebersichtlicher.
+         */
         akt_summe_wert    = this.getFeldWert( index_zeile_aktuell, akt_summe_index    );
-        akt_position_wert = this.getFeldWert( index_zeile_aktuell, akt_position_index ); 
+        akt_laufindex_wert = this.getFeldWert( index_zeile_aktuell, akt_lauf_index ); 
 
-        if ( akt_position_wert > 0 )
+        if ( akt_laufindex_wert > 0 )
         {            
-          if ( akt_position_wert == akt_summe_wert )
+          if ( akt_laufindex_wert == akt_summe_wert )
           {
-            this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_summe_wert + akt_position_wert );
-                
-            this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
-                
-            akt_summe_index += inc_wert;
+            /*
+             * Felduebereinstimmung
+             * Der Feldwerte am Laufindex und am Summenindex stimmen ueberein.
+             *
+             * Die Feldwerte werden zusammengezaehlt und im Feld beim Summenindex gespeichert.
+             * Der Feldwert am Laufindex wird auf 0 gesetzt.
+             * Der Summenindex wird um eine Position in Richtung des Incrementwertes verschoben.
+             * Das Spielergebnis wird um den Betrag der Feldsummen erhoeht. 
+             */
 
-            this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+            this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_summe_wert + akt_laufindex_wert );
+                
+            this.setFeldWert( index_zeile_aktuell, akt_lauf_index, 0 );
+                
+            akt_summe_index += increment_wert;
+
+            this.m_ergebnis_akt += akt_summe_wert + akt_laufindex_wert;
           }
           else if ( akt_summe_wert == 0 )
           {
-            this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_position_wert );
+            /*
+             * Feldmove
+             * Der Feldwert am Laufindex groesser 0.
+             * Der Feldwert am Summenindex ist 0.
+             *
+             * Die Feldwert vom Laufindex wird im Feld am Summenindex gespeichert.
+             * Der Feldwert am Laufindex wird auf 0 gesetzt.
+             *
+             * Der Summenindex aendert sich nicht, da es noch die Moeglichkeit gibt, 
+             * dass der Laufindex noch einen gleichen Feldwert vortreffen kann.
+             *
+             * Der "Spielstein" in Verschieberichtung verschoben worden.
+             */
+
+            this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_laufindex_wert );
                 
-            this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
+            this.setFeldWert( index_zeile_aktuell, akt_lauf_index, 0 );
           }
           else if ( akt_summe_wert > 0 )
           {
-            akt_summe_index += inc_wert;
+            /*
+             * Verschiebung Summenindex
+             * Der Feldwert am Laufindex groesser 0.
+             * Der Feldwert am Summenindex groesser 0.
+             *
+             * Die Feldwerte am Laufindex und am Summenindex sind unterschiedlich.
+             *
+             * Es muss ein freies Feld gefunden werden, in welches der Wert am 
+             * Laufindex gespeichert werden kann. Dass können zwei Indexwerte sein:
+             *
+             * 1. Ein freies Feld mit einem Feldwert von 0
+             *
+             * 2. Das Feld am Laufindex selber.
+             *    Es wird eben kein freies Feld mehr gefunden.
+             */
+
+            akt_summe_index += increment_wert;
             
-            while ( ( this.getFeldWert( index_zeile_aktuell, akt_summe_index ) > 0 ) && ( akt_summe_index != akt_position_index ) )
+            while ( ( this.getFeldWert( index_zeile_aktuell, akt_summe_index ) > 0 ) && ( akt_summe_index != akt_lauf_index ) )
             {
-              akt_summe_index += inc_wert;
+              akt_summe_index += increment_wert;
             }
 
-            akt_summe_wert = this.getFeldWert( index_zeile_aktuell, akt_summe_index );
-
-            if ( akt_summe_index != akt_position_index )
+            /*
+             * Nach der While-Schleife muss der Wert am Laufindex noch verarbeitet werden.
+             *
+             * Es muss nur dann eine Aktion gemacht werden, wenn sich die Indexwerte
+             * von Lauf- und Summenindex unterscheiden. 
+             *
+             * Sind beide Indexe gleich, wurde der Summenindex auf den Index des 
+             * Laufindexes verschoben. Da in diesem Fall die Indexe das gleiche 
+             * Spielfeld referenzieren, muss keine Aktion gemacht werden.
+             *
+             * Es kann auch hier sein, dass der Wert am Summenindex gliech dem Wert
+             * am Lauf index ist. Hier muessen die Werte zusammengezogen werden.
+             *
+             * Es kann auch sein, dass der Wert am Summenindex gleich 0 ist.
+             * In diesem Fall muss der Wert vom Laufindex an die neue Position
+             * des Summen-Indexes kopiert werden.
+             */
+            if ( akt_summe_index != akt_lauf_index )
             {
-              if ( akt_position_wert == akt_summe_wert )
-              {
-                this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_summe_wert + akt_position_wert );
-                
-                this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
-                
-                akt_summe_index += inc_wert;
+              akt_summe_wert = this.getFeldWert( index_zeile_aktuell, akt_summe_index );
 
-                this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+              if ( akt_laufindex_wert == akt_summe_wert )
+              {
+                this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_summe_wert + akt_laufindex_wert );
+                
+                this.setFeldWert( index_zeile_aktuell, akt_lauf_index, 0 );
+                
+                akt_summe_index += increment_wert;
+
+                this.m_ergebnis_akt += akt_summe_wert + akt_laufindex_wert;
               }
               else if ( akt_summe_wert == 0 )
               {
-                this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_position_wert );
+                this.setFeldWert( index_zeile_aktuell, akt_summe_index, akt_laufindex_wert );
                 
-                this.setFeldWert( index_zeile_aktuell, akt_position_index, 0 );
+                this.setFeldWert( index_zeile_aktuell, akt_lauf_index, 0 );
               }
             }
           }
         }
 
-        akt_position_index += inc_wert;
+        akt_lauf_index += increment_wert;
 
         zaehler_spalte++;
       }
@@ -631,6 +829,19 @@ background: transparent;
     return true;
   }
 
+  /*
+   * Verschiebefunktion Vertikal
+   * 
+   * Der grundlegende Algorithmus bleibt gleich.
+   * 
+   * Es aendert sich die Laufrichtung.
+   * Die aeussere Schleife geht ueber alle Spalten.
+   * Die innere Schleife geht ueber alle Zeilen. 
+   * 
+   * Die Variablen "akt_summe_index" und "akt_summe_index" sind Zeilen-Indexe.
+   * Die Spalten-Indexe werden ueber die aeussere Schleife gesteuert.
+   * 
+   */
 
   cls2048.prototype.noveVertikal = function( pRichtung )
   {
@@ -638,26 +849,23 @@ background: transparent;
 
     let index_spalte_aktuell = 0;
 
-    let index_abbruch = -1;
-
-    let inc_wert = 0;
-
-    let akt_summe_index = 0;
-    let akt_position_index = 0;
-    let akt_summe_wert = 0;
-    let akt_position_wert = 0;
-
-    let zaehler_zeile = 0;
+    let index_abbruch      = -1;
+    let increment_wert     =  0;
+    let akt_summe_index    =  0;
+    let akt_lauf_index     =  0;
+    let akt_summe_wert     =  0;
+    let akt_laufindex_wert =  0;
+    let zaehler_zeile      =  0;
 
     if ( pRichtung < 1 )
     {
-      inc_wert = -1;
+      increment_wert = -1;
 
       index_abbruch = -1;
     }
     else
     {
-      inc_wert = 1;
+      increment_wert = 1;
 
       index_abbruch = anzahl_zeilen;
     }
@@ -668,74 +876,74 @@ background: transparent;
       {
         akt_summe_index = anzahl_zeilen - 1;
         
-        akt_position_index = akt_summe_index - 1;
+        akt_lauf_index = akt_summe_index - 1;
       }
       else
       {
         akt_summe_index = 0;
         
-        akt_position_index = akt_summe_index + 1;
+        akt_lauf_index = akt_summe_index + 1;
       }
 
       zaehler_zeile = 0;
 
-      while ( ( zaehler_zeile <= anzahl_zeilen ) && ( akt_position_index != index_abbruch ) )
+      while ( ( zaehler_zeile <= anzahl_zeilen ) && ( akt_lauf_index != index_abbruch ) )
       {
         akt_summe_wert    = this.getFeldWert( akt_summe_index, index_spalte_aktuell    );
-        akt_position_wert = this.getFeldWert( akt_position_index, index_spalte_aktuell ); 
+        akt_laufindex_wert = this.getFeldWert( akt_lauf_index, index_spalte_aktuell ); 
 
-        if ( akt_position_wert > 0 )
+        if ( akt_laufindex_wert > 0 )
         {            
-          if ( akt_position_wert == akt_summe_wert )
+          if ( akt_laufindex_wert == akt_summe_wert )
           {
-            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_position_wert );
+            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_laufindex_wert );
                 
-            this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
+            this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
                 
-            akt_summe_index += inc_wert;
+            akt_summe_index += increment_wert;
 
-            this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+            this.m_ergebnis_akt += akt_summe_wert + akt_laufindex_wert;
           }
           else if ( akt_summe_wert == 0 )
           {
-            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_position_wert );
+            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_laufindex_wert );
                 
-            this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
+            this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
           }
           else if ( akt_summe_wert > 0 )
           {
-            akt_summe_index += inc_wert;
+            akt_summe_index += increment_wert;
             
-            while ( ( this.getFeldWert( akt_summe_index, index_spalte_aktuell ) > 0 ) && ( akt_summe_index != akt_position_index ) )
+            while ( ( this.getFeldWert( akt_summe_index, index_spalte_aktuell ) > 0 ) && ( akt_summe_index != akt_lauf_index ) )
             {
-              akt_summe_index += inc_wert;
+              akt_summe_index += increment_wert;
             }
 
-            akt_summe_wert = this.getFeldWert( akt_summe_index, index_spalte_aktuell );
-
-            if ( akt_summe_index != akt_position_index )
+            if ( akt_summe_index != akt_lauf_index )
             {
-              if ( akt_position_wert == akt_summe_wert )
-              {
-                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_position_wert );
-                
-                this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
-                
-                akt_summe_index += inc_wert;
+              akt_summe_wert = this.getFeldWert( akt_summe_index, index_spalte_aktuell );
 
-                this.m_ergebnis_akt += akt_summe_wert + akt_position_wert;
+              if ( akt_laufindex_wert == akt_summe_wert )
+              {
+                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_laufindex_wert );
+                
+                this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
+                
+                akt_summe_index += increment_wert;
+
+                this.m_ergebnis_akt += akt_summe_wert + akt_laufindex_wert;
               }
               else if ( akt_summe_wert == 0 )
               {
-                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_position_wert );
+                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_laufindex_wert );
                 
-                this.setFeldWert( akt_position_index, index_spalte_aktuell, 0 );
+                this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
               }
             }
           }
         }
 
-        akt_position_index += inc_wert;
+        akt_lauf_index += increment_wert;
 
         zaehler_zeile++;
       }
@@ -786,14 +994,39 @@ background: transparent;
 
   cls2048.prototype.doKeyPress = function( pKeyCode ) 
   {
+    /*
+     * Pruefung: Spiel noch aktiv?
+     * Das Spiel ist noch aktiv, solange es nicht "Game Over" ist.
+     *
+     * Ein Spielzug kann nur gemacht werden, wenn das Spiel noch lebt.
+     */
     if ( this.getKnzGameInPlay() )
     {
       $( '#divNewValue' ).val( "-- Kein neuer Wert gesetzt --" );
 
+      /*
+       * Hashwert Start
+       * Bevor der Spielzug gemacht wird, wird der Hashwert 
+       * des aktuellen Spielfeldes berechnet und gespeichert.
+       */
       this.setHashWertStart( this.getHashWert() );
 
+      /*
+       * Es wird die Funktion fuer die Tastaturbehandlung aufgerufen.
+       */
       if ( this.keyPress( pKeyCode ) ) 
       {
+        /*
+         * Pruefung: Hashwerte unterschiedlich?
+         * Sind die Hashwerte nach dem Spielzug unterschiedlich, hat 
+         * sich das Spielfeld geaendert. 
+         * 
+         * Nur in diesem Fall, darf ein neuer "Spielstein" auf dem 
+         * Spielfeld erscheinen.
+         * 
+         * Sind die Hashwerte unterschiedlich, wird ein neuer 
+         * "Spielstein" gesetzt und der Spielzugzaehler erhoeht.
+         */
         if ( this.getHashWertStart() != this.getHashWert() )
         {
           this.placeNewValue();
@@ -802,11 +1035,19 @@ background: transparent;
         }
       }
 
+      /*
+       * Pruefung: Neuer Bestwert?
+       * Uebersteigt der neue Spielstand den bisherigen Bestwert, 
+       * wird der Bestwert auf den neuen Spielstand gesetzt.
+       */
       if ( this.getErgebnisAktuell() > this.getErgebnisBest() )
       {
          this.setErgebnisBest( this.getErgebnisAktuell() );
       }
 
+      /*
+       * Am Ende wird das neue Spielfeld zur Anzeige gebracht.
+       */
       this.drawGame();
     }
   }
@@ -814,14 +1055,25 @@ background: transparent;
 
   cls2048.prototype.startNewGame = function( pAnzahlZeilen, pAnzahlSpalten ) 
   {
+    /*
+     * Ein neues Spielfeld in den uebergebenen Ausdehnungen erstellen
+     */
     this.initArray( pAnzahlZeilen, pAnzahlSpalten );
 
+    /*
+     * Zwei neue "Spielsteine" setzen
+     */
+    this.placeNewValue();
     this.placeNewValue();
 
-    this.placeNewValue();
-
+    /*
+     * Hashwert-Start berechnen.
+     */
     this.setHashWertStart( this.getHashWert() );
 
+    /*
+     * Spielfeld ausgeben
+     */
     this.drawGame();
   }
 
@@ -855,7 +1107,6 @@ background: transparent;
         index_zeile_aktuell++;
       }
     }
-
 
     this.drawGame();
   }
@@ -1070,12 +1321,10 @@ background: transparent;
       </td>
     </tr>
 
-
-
   </table>
 
   <br>
-
+  <br>
 
 </body>
 </html>
