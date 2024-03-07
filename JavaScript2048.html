@@ -466,9 +466,11 @@
      * Es wird der Hashwert des Spielfeldes vor und nach einem Spielzug ermittelt.
      * 
      * Ist der Spielzug ungueltig, veraendern sich die Hashwerte nicht.
+     * Ist der Spielzug gueltig, veraendern sich die Werte im Spielfeld
+     * und somit auch der Hashwert des Spielfeldes.
      *
-     * Ein neuer "Spielstein" wird nur dann dem Spielfeld hinzugefuegt,
-     * wenn der Spielzug gueltig ist.
+     * Ein neuer "Spielstein" wird dem Spielfeld hinzugefuegt,
+     * wenn der gemachte Spielzug gueltig war.
      */
 
     let hash_wert            = 0;
@@ -536,7 +538,7 @@
         neues_feld_nr_set = 1;
       }
 
-      $( '#divNewValue' ).val( "" +  neues_feld_nr_set );
+      $( '#divNewValue' ).val( "" + neues_feld_nr_set );
 
       /*
        * Bestimmung des Feldwertes
@@ -548,7 +550,7 @@
        * Ueber eine While-Schleife, wird das freie Feld in den Spielfeldern gesucht.
        * 
        * Wurde die Feldnummer gefunden, bekommt dieses den neuen Feldwert zugewiesen
-       * und die Funktion verlassen.
+       * und die Funktion wird mit einer Rueckgabe von "true" verlassen.
        */
       let neues_feld_nr_aktuell = 0;
 
@@ -582,6 +584,7 @@
 
     return false;
   }
+
 
   /*
    * Verschiebefunktion Horizontal
@@ -629,6 +632,13 @@
    * 
    * Die Laufrichtung wird ueber die Variable "increment_wert" gesteuert.
    * 
+   * Die Laufrichtung ist immer entgegengesetzt zur Verschieberichtung.
+   * 
+   * Wird nach links verschoben, wandern die Indexe von links nach rechts
+   * und die Werte von rechts nach links.
+   * 
+   * Wird nach rechts verschoben, wandern die Indexe von rechts nach links.
+   * 
    * Wird nach links verschoben:
    * -Die Spielsteine werden zum Array-Anfang verschoben.
    * -Die Suchrichtung startet beim kleinem Index hin zum grossen Index.
@@ -653,15 +663,14 @@
   {
     let anzahl_spalten = this.m_anzahl_spalten; 
 
-    let index_zeile_aktuell = 0;
-
-    let index_abbruch      = -1;
-    let increment_wert     =  0;
-    let akt_summe_index    =  0;
-    let akt_lauf_index     =  0;
-    let akt_summe_wert     =  0;
-    let akt_laufindex_wert =  0;
-    let zaehler_spalte     =  0;
+    let index_zeile_aktuell =  0;
+    let index_abbruch       = -1;
+    let increment_wert      =  0;
+    let akt_summe_index     =  0;
+    let akt_lauf_index      =  0;
+    let akt_summe_wert      =  0;
+    let akt_laufindex_wert  =  0;
+    let zaehler_spalte      =  0;
 
     if ( pRichtung < 1 )
     {
@@ -707,8 +716,8 @@
          * Die Speicherung der Feldwerte ist eigentlich nicht wirklich notwendig.
          * Die Zwischenspeicherung macht aber den Algorithmus uebersichtlicher.
          */
-        akt_summe_wert    = this.getFeldWert( index_zeile_aktuell, akt_summe_index    );
-        akt_laufindex_wert = this.getFeldWert( index_zeile_aktuell, akt_lauf_index ); 
+        akt_summe_wert     = this.getFeldWert( index_zeile_aktuell, akt_summe_index );
+        akt_laufindex_wert = this.getFeldWert( index_zeile_aktuell, akt_lauf_index  ); 
 
         if ( akt_laufindex_wert > 0 )
         {            
@@ -829,6 +838,7 @@
     return true;
   }
 
+
   /*
    * Verschiebefunktion Vertikal
    * 
@@ -840,22 +850,20 @@
    * 
    * Die Variablen "akt_summe_index" und "akt_summe_index" sind Zeilen-Indexe.
    * Die Spalten-Indexe werden ueber die aeussere Schleife gesteuert.
-   * 
    */
 
   cls2048.prototype.noveVertikal = function( pRichtung )
   {
     let anzahl_zeilen = this.m_anzahl_zeilen;
 
-    let index_spalte_aktuell = 0;
-
-    let index_abbruch      = -1;
-    let increment_wert     =  0;
-    let akt_summe_index    =  0;
-    let akt_lauf_index     =  0;
-    let akt_summe_wert     =  0;
-    let akt_laufindex_wert =  0;
-    let zaehler_zeile      =  0;
+    let index_spalte_aktuell =  0;
+    let index_abbruch        = -1;
+    let increment_wert       =  0;
+    let akt_summe_index      =  0;
+    let akt_lauf_index       =  0;
+    let akt_summe_wert       =  0;
+    let akt_laufindex_wert   =  0;
+    let zaehler_zeile        =  0;
 
     if ( pRichtung < 1 )
     {
@@ -889,16 +897,16 @@
 
       while ( ( zaehler_zeile <= anzahl_zeilen ) && ( akt_lauf_index != index_abbruch ) )
       {
-        akt_summe_wert    = this.getFeldWert( akt_summe_index, index_spalte_aktuell    );
-        akt_laufindex_wert = this.getFeldWert( akt_lauf_index, index_spalte_aktuell ); 
+        akt_summe_wert     = this.getFeldWert( akt_summe_index, index_spalte_aktuell );
+        akt_laufindex_wert = this.getFeldWert( akt_lauf_index,  index_spalte_aktuell ); 
 
         if ( akt_laufindex_wert > 0 )
         {            
           if ( akt_laufindex_wert == akt_summe_wert )
           {
-            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_laufindex_wert );
+            this.setFeldWert( akt_summe_index, index_spalte_aktuell, akt_summe_wert + akt_laufindex_wert );
                 
-            this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
+            this.setFeldWert( akt_lauf_index,  index_spalte_aktuell, 0 );
                 
             akt_summe_index += increment_wert;
 
@@ -906,9 +914,9 @@
           }
           else if ( akt_summe_wert == 0 )
           {
-            this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_laufindex_wert );
+            this.setFeldWert( akt_summe_index, index_spalte_aktuell, akt_laufindex_wert );
                 
-            this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
+            this.setFeldWert( akt_lauf_index,  index_spalte_aktuell, 0 );
           }
           else if ( akt_summe_wert > 0 )
           {
@@ -925,9 +933,9 @@
 
               if ( akt_laufindex_wert == akt_summe_wert )
               {
-                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_summe_wert + akt_laufindex_wert );
+                this.setFeldWert( akt_summe_index, index_spalte_aktuell, akt_summe_wert + akt_laufindex_wert );
                 
-                this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
+                this.setFeldWert( akt_lauf_index,  index_spalte_aktuell, 0 );
                 
                 akt_summe_index += increment_wert;
 
@@ -935,9 +943,9 @@
               }
               else if ( akt_summe_wert == 0 )
               {
-                this.setFeldWert( akt_summe_index,    index_spalte_aktuell, akt_laufindex_wert );
+                this.setFeldWert( akt_summe_index, index_spalte_aktuell, akt_laufindex_wert );
                 
-                this.setFeldWert( akt_lauf_index, index_spalte_aktuell, 0 );
+                this.setFeldWert( akt_lauf_index,  index_spalte_aktuell, 0 );
               }
             }
           }
@@ -966,7 +974,7 @@
 
     if ( pKeyCode === 38 ) { return this.noveVertikal( 1 );    } // Up Arrow
 
-    if ( pKeyCode === 40 ) { return this.noveVertikal( -1 );  } // Down Arrow
+    if ( pKeyCode === 40 ) { return this.noveVertikal( -1 );   } // Down Arrow
 
     return false;
   }
@@ -1088,6 +1096,15 @@
 
   cls2048.prototype.startTestGameOver = function( pKnzFillGrid ) 
   {
+    /*
+     * Pruefung: Spielfeld ausfuellen?
+     * 
+     * Um die Funktion "Game Over" testen zu koennen, koennen alle Zellen 
+     * des Spielfeldes mit einem unterschiedlichem Wert versehen werden.
+     * 
+     * Diese Ausfuellung erfolgt nur, wenn der Parameter "pKnzFillGrid"
+     * auf True steht.
+     */
     if ( pKnzFillGrid )
     {
       let index_zeile_aktuell  = 0;
@@ -1124,21 +1141,21 @@
 
     $( "#btnRIGHT"              ).click( function() { m_instanz_2048.doKeyPress( 39 );           } );
 
-    $( "#btnStart3"             ).click( function() { m_instanz_2048.startNewGame( 3, 3 );    } );
+    $( "#btnStart3"             ).click( function() { m_instanz_2048.startNewGame( 3, 3 );       } );
 
-    $( "#btnStart4"             ).click( function() { m_instanz_2048.startNewGame( 4, 4 );    } );
+    $( "#btnStart4"             ).click( function() { m_instanz_2048.startNewGame( 4, 4 );       } );
 
-    $( "#btnStart5"             ).click( function() { m_instanz_2048.startNewGame( 5, 5 );    } );
+    $( "#btnStart5"             ).click( function() { m_instanz_2048.startNewGame( 5, 5 );       } );
 
-    $( "#btnStart6"             ).click( function() { m_instanz_2048.startNewGame( 6, 6 );    } );
+    $( "#btnStart6"             ).click( function() { m_instanz_2048.startNewGame( 6, 6 );       } );
 
-    $( "#btnStart7"             ).click( function() { m_instanz_2048.startNewGame( 7, 7 );    } );
+    $( "#btnStart7"             ).click( function() { m_instanz_2048.startNewGame( 7, 7 );       } );
 
-    $( "#btnStart8"             ).click( function() { m_instanz_2048.startNewGame( 8, 8 );    } );
+    $( "#btnStart8"             ).click( function() { m_instanz_2048.startNewGame( 8, 8 );       } );
 
-    $( "#btnStartQ"             ).click( function() { m_instanz_2048.startNewGame( 5, 7 );    } );
+    $( "#btnStartQ"             ).click( function() { m_instanz_2048.startNewGame( 5, 7 );       } );
 
-    $( "#btnStartH"             ).click( function() { m_instanz_2048.startNewGame( 8, 4 );    } );
+    $( "#btnStartH"             ).click( function() { m_instanz_2048.startNewGame( 8, 4 );       } );
 
     $( "#btnTestGameOver1"      ).click( function() { m_instanz_2048.startTestGameOver( true );  } );
 
@@ -1237,21 +1254,21 @@
 
     <tr>
       <td colspan="3" >
-        <input class="button2" type="submit" id="btnUP"            value="&nbsp;&nbsp;Up&nbsp;&nbsp;"         >&nbsp;&nbsp;
-        <input class="button2" type="submit" id="btnDOWN"          value="&nbsp;&nbsp;Down&nbsp;&nbsp;"       >&nbsp;&nbsp;
-        <input class="button2" type="submit" id="btnLEFT"          value="&nbsp;&nbsp;Left&nbsp;&nbsp;"       >&nbsp;&nbsp;
-        <input class="button2" type="submit" id="btnRIGHT"         value="&nbsp;&nbsp;Right&nbsp;&nbsp;"      >&nbsp;&nbsp;&nbsp;&nbsp;
+        <input class="button2" type="submit" id="btnUP"    value="&nbsp;&nbsp;Up&nbsp;&nbsp;"    >&nbsp;&nbsp;
+        <input class="button2" type="submit" id="btnDOWN"  value="&nbsp;&nbsp;Down&nbsp;&nbsp;"  >&nbsp;&nbsp;
+        <input class="button2" type="submit" id="btnLEFT"  value="&nbsp;&nbsp;Left&nbsp;&nbsp;"  >&nbsp;&nbsp;
+        <input class="button2" type="submit" id="btnRIGHT" value="&nbsp;&nbsp;Right&nbsp;&nbsp;" >&nbsp;&nbsp;&nbsp;&nbsp;
       </td>
     </tr>
 
 
     <tr>
       <td colspan="3" >
-        <input class="button3" type="submit" id="btnTestLoopLeft"  value="&nbsp;&nbsp;Loop Left&nbsp;&nbsp;"  >&nbsp;&nbsp;
-        <input class="button3" type="submit" id="btnTestLoopRight" value="&nbsp;&nbsp;Loop Right&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestLoopLeft"      value="&nbsp;&nbsp;Loop Left&nbsp;&nbsp;"  >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestLoopRight"     value="&nbsp;&nbsp;Loop Right&nbsp;&nbsp;" >&nbsp;&nbsp;
         <br />
-        <input class="button3" type="submit" id="btnTestGameOver1"   value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 1&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
-        <input class="button3" type="submit" id="btnTestGameOver2"   value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 2&nbsp;&nbsp;&nbsp;"     >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestGameOver1"     value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 1&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestGameOver2"     value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 2&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
         <br />
         <input class="button3" type="submit" id="btnShowFreeFieldsYes" value="&nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Free Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
         <input class="button3" type="submit" id="btnShowFreeFieldsNo"  value="&nbsp;&nbsp;&nbsp;&nbsp;Hide&nbsp;Free Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
