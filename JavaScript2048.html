@@ -1086,6 +1086,155 @@
   }
 
 
+  cls2048.prototype.startReArrangeFields = function() 
+  {
+
+    /* 
+     * Spielfeld sortieren
+     * Diese Funktion ist im normalem Spiel nicht vorgesehen, da
+     * es aber mein Quelltext ist, kann ich machen was ich will.
+     * ... oefter mal was neues
+     * 
+     * Sortiert die Zahlen im Spielfeld so, dass der hoechste Wert 
+     * in der Linken unteren Ecke steht.
+     * 
+     * Die erste Schleife fuegt alle Werte einem Array hinzu.
+     * 
+     * Der Array wird sortiert.
+     * Die Sortierreihenfolge wird anschliessend umgedreht.
+     * 
+     * Die zweite Schleife speichert die sortierten Werte wieder
+     * im Spielfeld. Es wird bei der letzten Zeile gestartet.
+     * Die Spalten werden von links nach rechts durchgegangen.
+     */
+
+    let sort_array = [];
+    let sort_index = 0;
+
+    let index_zeile_aktuell  = 0;
+    let index_spalte_aktuell = 0;
+
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      index_spalte_aktuell = 0;
+
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+        sort_array.push( Number( this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell ) ) ); 
+
+        index_spalte_aktuell++;
+      }
+
+      index_zeile_aktuell++;
+    }
+
+    /* 
+     * https://www.w3schools.com/js/js_array_sort.asp#mark_sort
+     * 
+     * By default, the sort() function sorts values as strings.
+     * 
+     * This works well for strings ("Apple" comes before "Banana").
+     * 
+     * If numbers are sorted as strings, "25" is bigger than "100", because "2" is bigger than "1".
+     * 
+     * Because of this, the sort() method will produce incorrect result when sorting numbers.
+     * 
+     * You can fix this by providing a compare function:
+     */
+
+    sort_array.sort( function( a, b ) { return a - b; } );
+
+    sort_array.reverse();
+
+    index_zeile_aktuell  = this.m_anzahl_zeilen - 1;
+
+    while ( index_zeile_aktuell >= 0  )
+    {
+      index_spalte_aktuell = 0;
+
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+        this.setFeldWert( index_zeile_aktuell, index_spalte_aktuell, sort_array[ sort_index ] ); 
+
+        sort_index++;
+
+        index_spalte_aktuell++;
+      }
+
+      index_zeile_aktuell--;
+    }
+
+    this.drawGame();
+  }
+
+
+  cls2048.prototype.calcFieldSum = function( pStartZeile, pStartSpalte ) 
+  {
+    let ergebnis = 0;
+
+    let index_zeile_aktuell  = pStartZeile;
+    let index_spalte_aktuell = pStartSpalte;
+
+    let field_value_search = this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell );
+
+    if ( field_value_search > 0 )
+    {
+      let zaehler_field_value = 0;
+
+      while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+      {
+        index_spalte_aktuell = 0;
+
+        while ( index_spalte_aktuell < this.m_anzahl_spalten )
+        {
+          if ( this.getFeldWert( index_zeile_aktuell, index_spalte_aktuell ) === field_value_search )
+          {
+            this.setFeldWert( index_zeile_aktuell, index_spalte_aktuell, 0 ); 
+
+            ergebnis += field_value_search;
+
+            zaehler_field_value++;
+
+            if ( zaehler_field_value == 2 )
+            {
+              return ergebnis;
+            }
+          }
+
+          index_spalte_aktuell++;
+        }
+
+        index_zeile_aktuell++;
+      }
+    }
+
+    return ergebnis;
+  }
+
+
+  cls2048.prototype.startCleanUpFields = function() 
+  {
+    let index_zeile_aktuell  = 0;
+    let index_spalte_aktuell = 0;
+
+    while ( index_zeile_aktuell < this.m_anzahl_zeilen )
+    {
+      index_spalte_aktuell = 0;
+
+      while ( index_spalte_aktuell < this.m_anzahl_spalten )
+      {
+        this.setFeldWert( index_zeile_aktuell, index_spalte_aktuell, this.calcFieldSum( index_zeile_aktuell, index_spalte_aktuell ) ); 
+
+        index_spalte_aktuell++;
+      }
+
+      index_zeile_aktuell++;
+    }
+
+    this.drawGame();
+  }
+
+
   cls2048.prototype.setShowFreeFields = function( pKnzShowFreeFields ) 
   {
     this.setKnzShowFreeFields( pKnzShowFreeFields );
@@ -1165,6 +1314,9 @@
 
     $( "#btnShowFreeFieldsNo"   ).click( function() { m_instanz_2048.setShowFreeFields( false ); } );
 
+    $( "#btnReArrange"          ).click( function() { m_instanz_2048.startReArrangeFields();     } );
+
+    $( "#btnCleanUp"            ).click( function() { m_instanz_2048.startCleanUpFields();       } );
 
     $( "#btnTestLoopLeft" ).click( function() 
     {
@@ -1272,6 +1424,9 @@
         <br />
         <input class="button3" type="submit" id="btnShowFreeFieldsYes" value="&nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Free Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
         <input class="button3" type="submit" id="btnShowFreeFieldsNo"  value="&nbsp;&nbsp;&nbsp;&nbsp;Hide&nbsp;Free Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <br />
+        <input class="button3" type="submit" id="btnReArrange"         value="&nbsp;&nbsp;&nbsp;&nbsp;Re-Arrange Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnCleanUp"           value="&nbsp;&nbsp;&nbsp;&nbsp;Clean&nbsp;Up Fields&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
       </td>
     </tr>
 
