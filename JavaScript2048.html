@@ -696,19 +696,47 @@
        */
       if ( pRichtung < 1 )
       {
+        /*
+         * Richtung Rechts
+         * Summenbildung startet bei der letzten Spalte.
+         * Summenindex startet an der letzten Position (Spalte)
+         * Der Laufindex startet ein Feld davor.
+         * Das ist Summenindex minus 1 (Alternativ: Anzahlspalten minus 2).
+         */
+
         akt_summe_index = anzahl_spalten - 1;
         
         akt_lauf_index = akt_summe_index - 1;
       }
       else
       {
+        /*
+         * Richtung Links
+         * Summenbildung startet bei der ersten Spalte.
+         * Summenindex startet an der ersten Position (Spalte)
+         * Der Laufindex startet ein Feld dahinter.
+         * Das ist der Index 1.
+         */
+
         akt_summe_index = 0;
         
-        akt_lauf_index = akt_summe_index + 1;
+        akt_lauf_index = 1;
       }
 
+      /*
+       * Der Spaltenzaehler wird auf 0 gesetzt.
+       * (Eventuell kann auch auf den Spaltenzaehler verzichtet werden.
+       *  da der Laufindex auf jeden Fall am Ende der While-Schleife
+       *  veraendert wird. (Aktuell bleibt erstmal der Spaltenzaehler drin))
+       */
       zaehler_spalte = 0;
 
+      /*
+       * While-Schleife ueber alle Spalten
+       * Die While-Schleife wird solange ausgefuehrt wie...
+       * ... der Spaltenzaehler noch nicht groesser als die Anzahl der Spalten ist
+       * ... der Laufindex noch ungleich dem Index fuer den Schleifenabbruch ist.
+       */
       while ( ( zaehler_spalte <= anzahl_spalten ) && ( akt_lauf_index != index_abbruch ) )
       {
         /*
@@ -719,6 +747,15 @@
         akt_summe_wert     = this.getFeldWert( index_zeile_aktuell, akt_summe_index );
         akt_laufindex_wert = this.getFeldWert( index_zeile_aktuell, akt_lauf_index  ); 
 
+        /*
+         * Pruefung: Feldwert am Laufindex groesser 0?
+         * Ist der Feldwert am Laufindex gleich 0, kann das aktuelle Feld am Laufindex
+         * uebersprungen werden. Es handelt sich um ein neutrales Feld.
+         * 
+         * Ist der Feldwert groesser 0, muessen weitere Pruefungen gemacht werden.
+         * Bei diesen weiteren Pruefungen wird entschieden, wie der aktuelle 
+         * Feldwert sich auf den Lauf und Summen-Index auswirkt.
+         */
         if ( akt_laufindex_wert > 0 )
         {            
           if ( akt_laufindex_wert == akt_summe_wert )
@@ -1086,6 +1123,46 @@
   }
 
 
+
+  cls2048.prototype.startKeyLoop = function( pKnzArt ) 
+  {
+    if ( pKnzArt === 1 )
+    {
+      /*
+       * Loop Clockwise
+       */
+      this.doKeyPress( 39 ); // Right
+      this.doKeyPress( 40 ); // Down
+      this.doKeyPress( 37 ); // Left
+      this.doKeyPress( 38 ); // Up
+    } 
+
+    if ( pKnzArt === 2 )
+    {
+      /*
+       * Loop Counter-Clockwise
+       */
+      this.doKeyPress( 37 ); // Left
+      this.doKeyPress( 40 ); // Down
+      this.doKeyPress( 39 ); // Right
+      this.doKeyPress( 38 ); // Up
+    } 
+
+
+    if ( pKnzArt === 3 )
+    {
+      /*
+       * Loop Up Down Left Right
+       */
+      this.doKeyPress( 38 ); // Up
+      this.doKeyPress( 40 ); // Down
+      this.doKeyPress( 37 ); // Left
+      this.doKeyPress( 39 ); // Right
+    } 
+  }
+
+
+
   cls2048.prototype.startReArrangeFields = function() 
   {
 
@@ -1318,21 +1395,15 @@
 
     $( "#btnCleanUp"            ).click( function() { m_instanz_2048.startCleanUpFields();       } );
 
-    $( "#btnTestLoopLeft" ).click( function() 
+    $( "#btnTestLoopClockwise" ).click( function() 
     {
-      m_instanz_2048.doKeyPress( 37 );
-      m_instanz_2048.doKeyPress( 40 );
-      m_instanz_2048.doKeyPress( 39 );
-      m_instanz_2048.doKeyPress( 38 );
+      m_instanz_2048.startKeyLoop( 1 );
     } );
 
 
-    $( "#btnTestLoopRight" ).click( function() 
+    $( "#btnTestLoopCounterClockwise" ).click( function() 
     {
-        m_instanz_2048.doKeyPress( 38 );
-        m_instanz_2048.doKeyPress( 40 );
-        m_instanz_2048.doKeyPress( 37 );
-        m_instanz_2048.doKeyPress( 39 );
+      m_instanz_2048.startKeyLoop( 2 );
     } );
 
 
@@ -1340,17 +1411,11 @@
     {
       if ( pEvent.which === 65 ) 
       {
-        m_instanz_2048.doKeyPress( 37 );
-        m_instanz_2048.doKeyPress( 40 );
-        m_instanz_2048.doKeyPress( 39 );
-        m_instanz_2048.doKeyPress( 38 );
+         m_instanz_2048.startKeyLoop( 1 );
       }
       else if ( pEvent.which === 66 ) 
       {
-        m_instanz_2048.doKeyPress( 38 );
-        m_instanz_2048.doKeyPress( 40 );
-        m_instanz_2048.doKeyPress( 37 );
-        m_instanz_2048.doKeyPress( 39 );
+        m_instanz_2048.startKeyLoop( 2 );
       }
       else 
       {
@@ -1413,11 +1478,10 @@
       </td>
     </tr>
 
-
     <tr>
       <td colspan="3" >
-        <input class="button3" type="submit" id="btnTestLoopLeft"      value="&nbsp;&nbsp;Loop Left&nbsp;&nbsp;"  >&nbsp;&nbsp;
-        <input class="button3" type="submit" id="btnTestLoopRight"     value="&nbsp;&nbsp;Loop Right&nbsp;&nbsp;" >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestLoopClockwise"        value="&nbsp;&nbsp;Loop Clockwise&nbsp;&nbsp;"         >&nbsp;&nbsp;
+        <input class="button3" type="submit" id="btnTestLoopCounterClockwise" value="&nbsp;&nbsp;Loop Counter Clockwise&nbsp;&nbsp;" >&nbsp;&nbsp;
         <br />
         <input class="button3" type="submit" id="btnTestGameOver1"     value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 1&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
         <input class="button3" type="submit" id="btnTestGameOver2"     value="&nbsp;&nbsp;&nbsp;&nbsp;Test&nbsp;GameOver 2&nbsp;&nbsp;&nbsp;" >&nbsp;&nbsp;
